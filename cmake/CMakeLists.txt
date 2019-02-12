@@ -21,17 +21,17 @@ cmake_minimum_required (VERSION 2.8.5)
 
 project (IfcOpenShell)
 
-OPTION(UNICODE_SUPPORT "Build IfcOpenShell with Unicode support (requires ICU)." ON)
-OPTION(COLLADA_SUPPORT "Build IfcConvert with COLLADA support (requires OpenCOLLADA)." ON)
+OPTION(UNICODE_SUPPORT "Build IfcOpenShell with Unicode support (requires ICU)." OFF)
+OPTION(COLLADA_SUPPORT "Build IfcConvert with COLLADA support (requires OpenCOLLADA)." OFF)
 OPTION(ENABLE_BUILD_OPTIMIZATIONS "Enable certain compiler and linker optimizations on RelWithDebInfo and Release builds." OFF)
 OPTION(IFCCONVERT_DOUBLE_PRECISION "IfcConvert: Use double precision floating-point numbers." ON)
-OPTION(USE_IFC4 "Use IFC 4 instead of IFC 2x3 (full rebuild recommended when switching this)" OFF)
-OPTION(BUILD_IFCPYTHON "Build IfcPython." ON)
-OPTION(BUILD_EXAMPLES "Build example applications." ON)
+OPTION(USE_IFC4 "Use IFC 4 instead of IFC 2x3 (full rebuild recommended when switching this)" ON)
+OPTION(BUILD_IFCPYTHON "Build IfcPython." OFF)
+OPTION(BUILD_EXAMPLES "Build example applications." OFF)
 OPTION(USE_VLD "Use Visual Leak Detector for debugging memory leaks, MSVC-only." OFF)
 OPTION(USE_MMAP "Adds a command line options to parse IFC files from memory mapped files using Boost.Iostreams" OFF)
 OPTION(BUILD_IFCMAX "Build IfcMax, a 3ds Max plug-in, Windows-only." OFF)
-OPTION(BUILD_SHARED_LIBS "Build IfcParse and IfcGeom as shared libs (SO/DLL)." OFF)
+OPTION(BUILD_SHARED_LIBS "Build IfcParse and IfcGeom as shared libs (SO/DLL)." ON)
 # TODO QtViewer is deprecated ATM as it uses the 0.4 API
 # OPTION(BUILD_QTVIEWER "Build IfcOpenShell Qt GUI Viewer (requires Qt 4 framework)." OFF)
 
@@ -109,9 +109,9 @@ ENDMACRO()
 
 # Find Boost
 IF(WIN32)
-	SET(Boost_USE_STATIC_LIBS ON)
-	SET(Boost_USE_STATIC_RUNTIME ON)
-	SET(Boost_USE_MULTITHREADED ON)
+    SET(Boost_USE_SHARED_LIBS ON)
+    SET(Boost_USE_SHARED_RUNTIME ON)
+    SET(Boost_USE_MULTITHREADED ON)
 ENDIF()
 
 set(BOOST_COMPONENTS system program_options regex thread date_time)
@@ -126,6 +126,7 @@ if(USE_MMAP)
 endif()
 
 FIND_PACKAGE(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+set(Boost_LIBRARY_DIR "" CACHE PATH "Boost library directory")
 MESSAGE(STATUS "Boost include files found in ${Boost_INCLUDE_DIRS}")
 MESSAGE(STATUS "Boost libraries found in ${Boost_LIBRARY_DIRS}")
 
@@ -210,10 +211,6 @@ foreach(lib ${OPENCASCADE_LIBRARY_NAMES})
 	list(APPEND OPENCASCADE_LIBRARIES "${lib_path}")
 endforeach()
 
-if(MSVC)
-    add_definitions(-DHAVE_NO_DLL)
-    add_debug_variants(OPENCASCADE_LIBRARIES "${OPENCASCADE_LIBRARIES}" d)
-endif()
 if (WIN32)
     # OCC might require linking to Winsock depending on the version and build configuration
     list(APPEND OPENCASCADE_LIBRARIES ws2_32.lib)
@@ -398,16 +395,18 @@ IF(MSVC)
 	ENDIF()
 	# Link against the static VC runtime
     # TODO Make this configurable
-	FOREACH(flag CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_MINSIZEREL
-			CMAKE_CXX_FLAGS_RELWITHDEBINFO CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-			CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-		IF(${flag} MATCHES "/MD")
-			STRING(REGEX REPLACE "/MD" "/MT" ${flag} "${${flag}}")
-		ENDIF()
-		IF(${flag} MATCHES "/MDd")
-			STRING(REGEX REPLACE "/MDd" "/MTd" ${flag} "${${flag}}")
-		ENDIF()
-	ENDFOREACH()
+    if (NOT BUILD_SHARED_LIBS)
+        FOREACH(flag CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_MINSIZEREL
+            CMAKE_CXX_FLAGS_RELWITHDEBINFO CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+            CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+            IF(${flag} MATCHES "/MD")
+                STRING(REGEX REPLACE "/MD" "/MT" ${flag} "${${flag}}")
+            ENDIF()
+            IF(${flag} MATCHES "/MDd")
+                STRING(REGEX REPLACE "/MDd" "/MTd" ${flag} "${${flag}}")
+            ENDIF()
+        ENDFOREACH()
+    endif()
 ElSE()
     add_definitions(-Wall -Wextra)
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -625,6 +624,20 @@ IF(BUILD_IFCMAX)
 	ADD_SUBDIRECTORY(../src/ifcmax ifcmax)
 ENDIF()
 
+macro (OCCT_INSERT_CODE_FOR_TARGET)
+  install(CODE "if (\"\${CMAKE_INSTALL_CONFIG_NAME}\" MATCHES \"^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$\")
+    set (IFC4_INSTALL_BIN_LETTER \"\")
+  elseif (\"\${CMAKE_INSTALL_CONFIG_NAME}\" MATCHES \"^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$\")
+    set (IFC4_INSTALL_BIN_LETTER \"i\")
+  elseif (\"\${CMAKE_INSTALL_CONFIG_NAME}\" MATCHES \"^([Dd][Ee][Bb][Uu][Gg])$\")
+    set (IFC4_INSTALL_BIN_LETTER \"d\")
+  endif()")
+endmacro()
+
+if (MSVC)
+  OCCT_INSERT_CODE_FOR_TARGET ()
+endif()
+
 # CMake installation targets
 INSTALL(FILES ${IFCPARSE_H_FILES} 
 	DESTINATION ${INCLUDEDIR}/ifcparse
@@ -635,7 +648,7 @@ INSTALL(FILES ${IFCGEOM_H_FILES}
 )
 
 INSTALL(TARGETS IfcParse IfcGeom IfcConvert IfcGeomServer
-	ARCHIVE DESTINATION ${LIBDIR}
-	LIBRARY DESTINATION ${LIBDIR}
-	RUNTIME DESTINATION ${BINDIR}
+	ARCHIVE DESTINATION "${LIBDIR}\${IFC4_INSTALL_BIN_LETTER}"
+	LIBRARY DESTINATION "${LIBDIR}\${IFC4_INSTALL_BIN_LETTER}"
+	RUNTIME DESTINATION "${BINDIR}\${IFC4_INSTALL_BIN_LETTER}"
 )
