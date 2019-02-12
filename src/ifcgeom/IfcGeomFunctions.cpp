@@ -132,6 +132,7 @@
 #include <BRepClass3d_SolidClassifier.hxx>
 
 #include <Standard_Version.hxx>
+#include <NCollection_IncAllocator.hxx>
 
 #include "../ifcparse/IfcSIPrefix.h"
 #include "../ifcparse/IfcFile.h"
