@@ -445,8 +445,8 @@ bool IfcGeom::Kernel::convert(const IfcSchema::IfcPolygonalBoundedHalfSpace* l, 
 		sequence_of_point_to_wire(points, wire, wire.Closed() != 0);
 	}
 
-	TopoDS_Shape prism = BRepPrimAPI_MakePrism(BRepBuilderAPI_MakeFace(wire),gp_Vec(0,0,200));
-	gp_Trsf down; down.SetTranslation(gp_Vec(0,0,-100.0));
+	TopoDS_Shape prism = BRepPrimAPI_MakePrism(BRepBuilderAPI_MakeFace(wire),gp_Vec(0, 0, 200*getValue(GV_LENGTH_UNIT)));
+	gp_Trsf down; down.SetTranslation(gp_Vec(0, 0, -100.0*getValue(GV_LENGTH_UNIT)));
 	
 	// `trsf` and `down` both have a unit scale factor
 	prism.Move(trsf*down);	
