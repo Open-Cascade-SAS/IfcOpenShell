@@ -131,6 +131,9 @@ public:
 	/// Returns the entity with the specified id
 	IfcUtil::IfcBaseClass* entityById(int id);
 
+        /// Checks if the entity with the specified id exists
+        bool hasEntityById(int id) { return byid.find(id) != byid.end(); }
+
 	/// Returns the entity with the specified GlobalId
 	IfcSchema::IfcRoot* entityByGuid(const std::string& guid);
 

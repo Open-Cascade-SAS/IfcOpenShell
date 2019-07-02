@@ -835,7 +835,8 @@ std::string TokenArgument::toString(bool upper) const {
 		return TokenFunc::toString(token); 
 	}
 }
-bool TokenArgument::isNull() const { return TokenFunc::isOperator(token,'$'); }
+bool TokenArgument::isNull() const { return TokenFunc::isOperator(token,'$') ||
+  (token.type == Token_IDENTIFIER && !token.lexer->file->hasEntityById(TokenFunc::asIdentifier(token))); }
 
 IfcUtil::ArgumentType EntityArgument::type() const {
 	return IfcUtil::Argument_ENTITY_INSTANCE;
