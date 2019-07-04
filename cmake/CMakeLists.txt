@@ -112,6 +112,7 @@ IF(WIN32)
     SET(Boost_USE_SHARED_LIBS ON)
     SET(Boost_USE_SHARED_RUNTIME ON)
     SET(Boost_USE_MULTITHREADED ON)
+    add_definitions(-DBOOST_ALL_DYN_LINK)
 ENDIF()
 
 set(BOOST_COMPONENTS system program_options regex thread date_time)
