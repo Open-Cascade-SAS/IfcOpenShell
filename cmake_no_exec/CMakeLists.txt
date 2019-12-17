@@ -107,6 +107,44 @@ MACRO(SET_INSTALL_RPATHS _target _paths)
     SET_TARGET_PROPERTIES(${_target} PROPERTIES INSTALL_RPATH "${${_target}_rpaths}")
 ENDMACRO()
 
+# Find Open CASCADE
+IF("${OCC_INCLUDE_DIR}" STREQUAL "")
+    SET(OCC_INCLUDE_DIR "/usr/include/oce/" CACHE FILEPATH "Open CASCADE header files")
+    MESSAGE(STATUS "Looking for Open CASCADE include files in: ${OCC_INCLUDE_DIR}")
+    MESSAGE(STATUS "Use OCC_INCLUDE_DIR to specify another directory")
+ELSE()
+    SET(OCC_INCLUDE_DIR ${OCC_INCLUDE_DIR} CACHE FILEPATH "Open CASCADE header files")
+    MESSAGE(STATUS "Looking for Open CASCADE include files in: ${OCC_INCLUDE_DIR}")
+ENDIF()
+
+FIND_FILE(gp_Pnt_hxx "gp_Pnt.hxx" ${OCC_INCLUDE_DIR})
+IF(gp_Pnt_hxx)
+    MESSAGE(STATUS "Header files found")
+ELSE()
+    MESSAGE(FATAL_ERROR "Unable to find header files, aborting")
+ENDIF()
+
+SET(OPENCASCADE_LIBRARY_NAMES
+    TKernel TKMath TKBRep TKGeomBase TKGeomAlgo TKG3d TKG2d TKShHealing TKTopAlgo TKMesh TKPrim TKBool TKBO
+    TKFillet TKSTEP TKSTEPBase TKSTEPAttr TKXSBase TKSTEP209 TKIGES TKOffset
+)
+
+IF("${OCC_LIBRARY_DIR}" STREQUAL "")
+    SET(OCC_LIBRARY_DIR "/usr/lib/" CACHE FILEPATH "Open CASCADE library files")
+    MESSAGE(STATUS "Looking for Open CASCADE library files in: ${OCC_LIBRARY_DIR}")
+    MESSAGE(STATUS "Use OCC_LIBRARY_DIR to specify another directory")
+ELSE()
+    SET(OCC_LIBRARY_DIR ${OCC_LIBRARY_DIR} CACHE FILEPATH "Open CASCADE library files")
+    MESSAGE(STATUS "Looking for Open CASCADE library files in: ${OCC_LIBRARY_DIR}")
+ENDIF()
+
+FIND_LIBRARY(libTKernel NAMES TKernel TKerneld PATHS ${OCC_LIBRARY_DIR} NO_DEFAULT_PATH)
+IF(libTKernel)
+    MESSAGE(STATUS "Library files found")
+ELSE()
+    MESSAGE(FATAL_ERROR "Unable to find library files, aborting")
+ENDIF()
+
 # Find Boost
 IF(WIN32)
     SET(Boost_USE_SHARED_LIBS ON)
@@ -126,8 +164,8 @@ if(USE_MMAP)
     add_definitions(-DUSE_MMAP)
 endif()
 
-FIND_PACKAGE(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 set(Boost_LIBRARY_DIR "" CACHE PATH "Boost library directory")
+FIND_PACKAGE(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 MESSAGE(STATUS "Boost include files found in ${Boost_INCLUDE_DIRS}")
 MESSAGE(STATUS "Boost libraries found in ${Boost_LIBRARY_DIRS}")
 
@@ -164,44 +202,6 @@ function(add_debug_variants NAME LIBRARIES POSTFIX)
     endforeach()
     set(${NAME} ${LIBRARIES} PARENT_SCOPE)
 endfunction()
-
-# Find Open CASCADE
-IF("${OCC_INCLUDE_DIR}" STREQUAL "")
-	SET(OCC_INCLUDE_DIR "/usr/include/oce/" CACHE FILEPATH "Open CASCADE header files")
-	MESSAGE(STATUS "Looking for Open CASCADE include files in: ${OCC_INCLUDE_DIR}")
-	MESSAGE(STATUS "Use OCC_INCLUDE_DIR to specify another directory")
-ELSE()
-	SET(OCC_INCLUDE_DIR ${OCC_INCLUDE_DIR} CACHE FILEPATH "Open CASCADE header files")
-	MESSAGE(STATUS "Looking for Open CASCADE include files in: ${OCC_INCLUDE_DIR}")
-ENDIF()
-
-FIND_FILE(gp_Pnt_hxx "gp_Pnt.hxx" ${OCC_INCLUDE_DIR})
-IF(gp_Pnt_hxx)
-	MESSAGE(STATUS "Header files found")
-ELSE()
-	MESSAGE(FATAL_ERROR "Unable to find header files, aborting")
-ENDIF()
-
-SET(OPENCASCADE_LIBRARY_NAMES
-	TKernel TKMath TKBRep TKGeomBase TKGeomAlgo TKG3d TKG2d TKShHealing TKTopAlgo TKMesh TKPrim TKBool TKBO
-	TKFillet TKSTEP TKSTEPBase TKSTEPAttr TKXSBase TKSTEP209 TKIGES TKOffset
-)
-
-IF("${OCC_LIBRARY_DIR}" STREQUAL "")
-	SET(OCC_LIBRARY_DIR "/usr/lib/" CACHE FILEPATH "Open CASCADE library files")
-	MESSAGE(STATUS "Looking for Open CASCADE library files in: ${OCC_LIBRARY_DIR}")
-	MESSAGE(STATUS "Use OCC_LIBRARY_DIR to specify another directory")
-ELSE()
-	SET(OCC_LIBRARY_DIR ${OCC_LIBRARY_DIR} CACHE FILEPATH "Open CASCADE library files")
-	MESSAGE(STATUS "Looking for Open CASCADE library files in: ${OCC_LIBRARY_DIR}")
-ENDIF()
-
-FIND_LIBRARY(libTKernel NAMES TKernel TKerneld PATHS ${OCC_LIBRARY_DIR} NO_DEFAULT_PATH)
-IF(libTKernel)
-	MESSAGE(STATUS "Library files found")
-ELSE()
-	MESSAGE(FATAL_ERROR "Unable to find library files, aborting")
-ENDIF()
 
 # Use the found libTKernel as a template for all other OCC libraries
 # TODO Extract this into macro/function
