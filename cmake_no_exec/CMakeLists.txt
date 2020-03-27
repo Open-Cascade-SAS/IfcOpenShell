@@ -109,11 +109,11 @@ ENDMACRO()
 
 # Find Open CASCADE
 IF("${OCC_INCLUDE_DIR}" STREQUAL "")
-    SET(OCC_INCLUDE_DIR "/usr/include/oce/" CACHE FILEPATH "Open CASCADE header files")
+    SET(OCC_INCLUDE_DIR "/usr/include/oce/" CACHE PATH "Open CASCADE header files")
     MESSAGE(STATUS "Looking for Open CASCADE include files in: ${OCC_INCLUDE_DIR}")
     MESSAGE(STATUS "Use OCC_INCLUDE_DIR to specify another directory")
 ELSE()
-    SET(OCC_INCLUDE_DIR ${OCC_INCLUDE_DIR} CACHE FILEPATH "Open CASCADE header files")
+    SET(OCC_INCLUDE_DIR ${OCC_INCLUDE_DIR} CACHE PATH "Open CASCADE header files")
     MESSAGE(STATUS "Looking for Open CASCADE include files in: ${OCC_INCLUDE_DIR}")
 ENDIF()
 
@@ -130,11 +130,11 @@ SET(OPENCASCADE_LIBRARY_NAMES
 )
 
 IF("${OCC_LIBRARY_DIR}" STREQUAL "")
-    SET(OCC_LIBRARY_DIR "/usr/lib/" CACHE FILEPATH "Open CASCADE library files")
+    SET(OCC_LIBRARY_DIR "/usr/lib/" CACHE PATH "Open CASCADE library files")
     MESSAGE(STATUS "Looking for Open CASCADE library files in: ${OCC_LIBRARY_DIR}")
     MESSAGE(STATUS "Use OCC_LIBRARY_DIR to specify another directory")
 ELSE()
-    SET(OCC_LIBRARY_DIR ${OCC_LIBRARY_DIR} CACHE FILEPATH "Open CASCADE library files")
+    SET(OCC_LIBRARY_DIR ${OCC_LIBRARY_DIR} CACHE PATH "Open CASCADE library files")
     MESSAGE(STATUS "Looking for Open CASCADE library files in: ${OCC_LIBRARY_DIR}")
 ENDIF()
 
