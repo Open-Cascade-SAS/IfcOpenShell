@@ -218,40 +218,56 @@ if (WIN32)
 endif()
 
 IF(UNICODE_SUPPORT)
-	# Find ICU 
-	IF("${ICU_INCLUDE_DIR}" STREQUAL "")
-		MESSAGE(STATUS "No ICU include directory specified")
-	ENDIF()
+    # Find ICU 
+    IF("${ICU_ROOT_DIR}" STREQUAL "")
+    SET (ICU_ROOT_DIR "" CACHE PATH "ICU root directory")
+    MESSAGE (STATUS "No ICU directory specified")
+  ELSE()
+    # Find ICU include directory
+    find_path (ICU_INCLUDE_DIR NAMES unicode/ucnv.h PATHS ${ICU_ROOT_DIR} PATH_SUFFIXES include NO_DEFAULT_PATH)
+    IF (NOT ICU_INCLUDE_DIR)
+      SET(ICU_INCLUDE_DIR "" CACHE PATH "ICU headers directory")
+      MESSAGE (STATUS "ICU headers were not found. Please locate ICU_INCLUDE_DIR.")
+    ELSE()
+      MESSAGE (STATUS "ICU headers found in ${ICU_INCLUDE_DIR}")
+    ENDIF()
+    set (ICU_ARCH)
 
-	IF("${ICU_LIBRARY_DIR}" STREQUAL "")
-		MESSAGE(STATUS "No ICU library directory specified")
-		FIND_LIBRARY(icu NAMES icuuc icuucd PATHS ${ICU_LIBRARY_DIR})
-	ELSE()
-		FIND_LIBRARY(icu NAMES icuuc icuucd PATHS ${ICU_LIBRARY_DIR} NO_DEFAULT_PATH)
-	ENDIF()
+    math (EXPR compiler_bitness "32 + 32*(${CMAKE_SIZEOF_VOID_P}/8)")
+    if (${compiler_bitness} STREQUAL 64)
+      set (ICU_ARCH 64)
+    endif()
 
-	IF(icu)
-		GET_FILENAME_COMPONENT(ICU_LIBRARY_DIR ${icu} PATH)
+    SET(ICU_LIBRARY_DIR ${ICU_ROOT_DIR}/lib${ICU_ARCH} CACHE PATH "ICU library directory")
+    IF (NOT ICU_LIBRARY_DIR OR NOT EXISTS "${ICU_LIBRARY_DIR}")
+      SET(ICU_LIBRARY_DIR "" CACHE PATH "ICU library directory")
+      MESSAGE (STATUS "ICU libraries directory were not found. Please locate ICU_LIBRARY_DIR.")
+    ELSE()
+      ADD_DEFINITIONS(-DHAVE_ICU)
+      # Find ICU libraries
+      FIND_LIBRARY(icuuc NAMES icuuc PATHS ${ICU_LIBRARY_DIR} NO_DEFAULT_PATH)
+      # NOTE icudata appears to be icudt on Windows/MSVC and icudata on others
+      #      dl is included to resolve dlopen and friends symbols
+      IF(WIN32)
+        FIND_LIBRARY(icudt NAMES icudt PATHS ${ICU_LIBRARY_DIR} NO_DEFAULT_PATH)
+        SET(ICU_LIBRARIES ${icuuc} ${icudt})
+        add_debug_variants(ICU_LIBRARIES "${ICU_LIBRARIES}" d)
+        # TODO MinGW build would appear to be using dynamic ICU regardless of this definition.
+        ADD_DEFINITIONS(-DU_STATIC_IMPLEMENTATION) # required for static ICU
+      ELSE()
+        FIND_LIBRARY(icudt NAMES icudata PATHS ${ICU_LIBRARY_DIR} NO_DEFAULT_PATH)
+        FIND_LIBRARY(icui18n NAMES icui18n PATHS ${ICU_LIBRARY_DIR} NO_DEFAULT_PATH)
+        FIND_LIBRARY(dl NAMES dl)
+        SET(ICU_LIBRARIES ${icuuc} ${icudt} ${dl} ${icui18n})
+      ENDIF()
+    ENDIF()
+  ENDIF()
 
-		ADD_DEFINITIONS(-DHAVE_ICU)
-		MESSAGE(STATUS "ICU libraries found")
-		# NOTE icudata appears to be icudt on Windows/MSVC and icudata on others
-		#      dl is included to resolve dlopen and friends symbols
-		IF(WIN32)
-			FIND_LIBRARY(icudt NAMES icudt PATHS ${ICU_LIBRARY_DIR} NO_DEFAULT_PATH)
-			SET(ICU_LIBRARIES ${icu} ${icudt})
-			add_debug_variants(ICU_LIBRARIES "${ICU_LIBRARIES}" d)
-			# TODO MinGW build would appear to be using dynamic ICU regardless of this definition.
-			ADD_DEFINITIONS(-DU_STATIC_IMPLEMENTATION) # required for static ICU
-		ELSE()
-			FIND_LIBRARY(icudt NAMES icudata PATHS ${ICU_LIBRARY_DIR} NO_DEFAULT_PATH)
-			FIND_LIBRARY(icui18n NAMES icui18n PATHS ${ICU_LIBRARY_DIR} NO_DEFAULT_PATH)
-			FIND_LIBRARY(dl NAMES dl)
-			SET(ICU_LIBRARIES ${icu} ${icudt} ${dl} ${icui18n})
-		ENDIF()
-	ELSE()
-		MESSAGE(FATAL_ERROR "UNICODE_SUPPORT enabled, but unable to find ICU. Disable UNICODE_SUPPORT or fix ICU paths to proceed.")
-	ENDIF()
+  IF(icuuc)
+    MESSAGE(STATUS "ICU libraries found in ${ICU_LIBRARY_DIR}")
+  ELSE()
+    MESSAGE(FATAL_ERROR "UNICODE_SUPPORT enabled, but unable to find ICU. Disable UNICODE_SUPPORT or fix ICU paths to proceed.")
+  ENDIF()
 ENDIF()
 
 IF(COLLADA_SUPPORT)
