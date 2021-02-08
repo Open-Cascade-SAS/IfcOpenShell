@@ -117,7 +117,6 @@
 #include <BRepTools_WireExplorer.hxx>
 
 #include <Poly_Triangulation.hxx>
-#include <Poly_Array1OfTriangle.hxx>
 
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
@@ -2686,18 +2685,15 @@ bool IfcGeom::Kernel::triangulate_wire(const TopoDS_Wire& wire, TopTools_ListOfS
 	Handle_Poly_Triangulation tri = BRep_Tool::Triangulation(face, loc);
 	
 	if (!tri.IsNull()) {
-		const TColgp_Array1OfPnt& nodes = tri->Nodes();
-
-		const Poly_Array1OfTriangle& triangles = tri->Triangles();
-		for (int i = 1; i <= triangles.Length(); ++i) {			
+		for (int i = 1; i <= tri->NbTriangles(); ++i) {
 			if (face.Orientation() == TopAbs_REVERSED)
-				triangles(i).Get(n123[2], n123[1], n123[0]);
-			else triangles(i).Get(n123[0], n123[1], n123[2]);
+				tri->Triangle(i).Get(n123[2], n123[1], n123[0]);
+			else tri->Triangle(i).Get(n123[0], n123[1], n123[2]);
 			
 			// Create polygons from the mesh vertices
 			BRepBuilderAPI_MakePolygon mp2;
 			for (int j = 0; j < 3; ++j) {
-				const gp_Pnt& uv = nodes.Value(n123[j]);
+				const gp_Pnt& uv = tri->Node(n123[j]);
 				uv_node key = std::make_pair(uv.X(), uv.Y());
 
 				if (mapping.find(key) == mapping.end()) {

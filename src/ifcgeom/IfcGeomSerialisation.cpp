@@ -615,18 +615,16 @@ IfcSchema::IfcProductDefinitionShape* IfcGeom::tesselate(const TopoDS_Shape& sha
 		Handle(Poly_Triangulation) tri = BRep_Tool::Triangulation(face, loc);
 
 		if (!tri.IsNull()) {
-			const TColgp_Array1OfPnt& nodes = tri->Nodes();
 			std::vector<IfcSchema::IfcCartesianPoint*> vertices;
-			for (int i = 1; i <= nodes.Length(); ++i) {
-				gp_Pnt pnt = nodes(i).Transformed(loc);
+			for (int i = 1; i <= tri->NbNodes(); ++i) {
+				gp_Pnt pnt = tri->Node(i).Transformed(loc);
 				std::vector<double> xyz; xyz.push_back(pnt.X()); xyz.push_back(pnt.Y()); xyz.push_back(pnt.Z());
 				IfcSchema::IfcCartesianPoint* cpnt = new IfcSchema::IfcCartesianPoint(xyz);
 				vertices.push_back(cpnt);
 			}
-			const Poly_Array1OfTriangle& triangles = tri->Triangles();
-			for (int i = 1; i <= triangles.Length(); ++i) {
+			for (int i = 1; i <= tri->NbTriangles(); ++i) {
 				int n1, n2, n3;
-				triangles(i).Get(n1, n2, n3);
+				tri->Triangle(i).Get(n1, n2, n3);
 				IfcSchema::IfcCartesianPoint::list::ptr points(new IfcSchema::IfcCartesianPoint::list);
 				points->push(vertices[n1 - 1]);
 				points->push(vertices[n2 - 1]);
