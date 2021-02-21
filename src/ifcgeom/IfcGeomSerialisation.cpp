@@ -86,12 +86,12 @@ IfcSchema::IfcKnotType::IfcKnotType opencascade_knotspec_to_ifc(GeomAbs_BSplKnot
 #endif
 
 template <>
-int convert_to_ifc(const Handle_Geom_Curve& c, IfcSchema::IfcCurve*& curve, bool advanced) {
+int convert_to_ifc(const Handle(Geom_Curve)& c, IfcSchema::IfcCurve*& curve, bool advanced) {
 	if (c->DynamicType() == STANDARD_TYPE(Geom_Line)) {
 		IfcSchema::IfcDirection* d;
 		IfcSchema::IfcCartesianPoint* p;
 
-		Handle_Geom_Line line = Handle_Geom_Line::DownCast(c);
+		Handle(Geom_Line) line = Handle(Geom_Line)::DownCast(c);
 
 		if (!convert_to_ifc(line->Position().Location(), p, advanced)) {
 			return 0;
@@ -107,7 +107,7 @@ int convert_to_ifc(const Handle_Geom_Curve& c, IfcSchema::IfcCurve*& curve, bool
 	} else if (c->DynamicType() == STANDARD_TYPE(Geom_Circle)) {
 		IfcSchema::IfcAxis2Placement3D* ax;
 
-		Handle_Geom_Circle circle = Handle_Geom_Circle::DownCast(c);
+		Handle(Geom_Circle) circle = Handle(Geom_Circle)::DownCast(c);
 
 		convert_to_ifc(circle->Position(), ax, advanced);
 		curve = new IfcSchema::IfcCircle(ax, circle->Radius());
@@ -116,7 +116,7 @@ int convert_to_ifc(const Handle_Geom_Curve& c, IfcSchema::IfcCurve*& curve, bool
 	} else if (c->DynamicType() == STANDARD_TYPE(Geom_Ellipse)) {
 		IfcSchema::IfcAxis2Placement3D* ax;
 
-		Handle_Geom_Ellipse ellipse = Handle_Geom_Ellipse::DownCast(c);
+		Handle(Geom_Ellipse) ellipse = Handle(Geom_Ellipse)::DownCast(c);
 
 		convert_to_ifc(ellipse->Position(), ax, advanced);
 		curve = new IfcSchema::IfcEllipse(ax, ellipse->MajorRadius(), ellipse->MinorRadius());
@@ -125,7 +125,7 @@ int convert_to_ifc(const Handle_Geom_Curve& c, IfcSchema::IfcCurve*& curve, bool
 	}
 #ifdef USE_IFC4
 	else if (c->DynamicType() == STANDARD_TYPE(Geom_BSplineCurve)) {
-		Handle_Geom_BSplineCurve bspline = Handle_Geom_BSplineCurve::DownCast(c);
+		Handle(Geom_BSplineCurve) bspline = Handle(Geom_BSplineCurve)::DownCast(c);
 
 		IfcSchema::IfcCartesianPoint::list::ptr points(new IfcSchema::IfcCartesianPoint::list);
 		TColgp_Array1OfPnt poles(1, bspline->NbPoles());
@@ -195,9 +195,9 @@ int convert_to_ifc(const Handle_Geom_Curve& c, IfcSchema::IfcCurve*& curve, bool
 }
 
 template <>
-int convert_to_ifc(const Handle_Geom_Surface& s, IfcSchema::IfcSurface*& surface, bool advanced) {
+int convert_to_ifc(const Handle(Geom_Surface)& s, IfcSchema::IfcSurface*& surface, bool advanced) {
 	if (s->DynamicType() == STANDARD_TYPE(Geom_Plane)) {
-		Handle_Geom_Plane plane = Handle_Geom_Plane::DownCast(s);
+		Handle(Geom_Plane) plane = Handle(Geom_Plane)::DownCast(s);
 		IfcSchema::IfcAxis2Placement3D* place;
 		/// @todo: Note that the Ax3 is converted to an Ax2 here
 		if (!convert_to_ifc(plane->Position().Ax2(), place, advanced)) {
@@ -208,7 +208,7 @@ int convert_to_ifc(const Handle_Geom_Surface& s, IfcSchema::IfcSurface*& surface
 	}
 #ifdef USE_IFC4
 	else if (s->DynamicType() == STANDARD_TYPE(Geom_CylindricalSurface)) {
-		Handle_Geom_CylindricalSurface cyl = Handle_Geom_CylindricalSurface::DownCast(s);
+		Handle(Geom_CylindricalSurface) cyl = Handle(Geom_CylindricalSurface)::DownCast(s);
 		IfcSchema::IfcAxis2Placement3D* place;
 		/// @todo: Note that the Ax3 is converted to an Ax2 here
 		if (!convert_to_ifc(cyl->Position().Ax2(), place, advanced)) {
@@ -219,7 +219,7 @@ int convert_to_ifc(const Handle_Geom_Surface& s, IfcSchema::IfcSurface*& surface
 	} else if (s->DynamicType() == STANDARD_TYPE(Geom_BSplineSurface)) {
 		typedef IfcTemplatedEntityListList<IfcSchema::IfcCartesianPoint> points_t;
 
-		Handle_Geom_BSplineSurface bspline = Handle_Geom_BSplineSurface::DownCast(s);
+		Handle(Geom_BSplineSurface) bspline = Handle(Geom_BSplineSurface)::DownCast(s);
 		points_t::ptr points(new points_t);
 
 		TColgp_Array2OfPnt poles(1, bspline->NbUPoles(), 1, bspline->NbVPoles());
@@ -322,7 +322,7 @@ int convert_to_ifc(const TopoDS_Edge& e, IfcSchema::IfcCurve*& c, bool advanced)
 	double a, b;
 	IfcSchema::IfcCurve* base;
 
-	Handle_Geom_Curve crv = BRep_Tool::Curve(e, a, b);
+	Handle(Geom_Curve) crv = BRep_Tool::Curve(e, a, b);
 	if (!convert_to_ifc(crv, base, advanced)) {
 		return 0;
 	}
@@ -353,7 +353,7 @@ int convert_to_ifc(const TopoDS_Edge& e, IfcSchema::IfcEdge*& edge, bool advance
 		return 0;
 	}
 
-	Handle_Geom_Curve crv = BRep_Tool::Curve(e, a, b);
+	Handle(Geom_Curve) crv = BRep_Tool::Curve(e, a, b);
 
 	if (crv.IsNull()) {
 		return 0;
@@ -381,7 +381,7 @@ int convert_to_ifc(const TopoDS_Wire& wire, IfcSchema::IfcLoop*& loop, bool adva
 	bool polygonal = true;
 	for (TopExp_Explorer exp(wire, TopAbs_EDGE); exp.More(); exp.Next()) {
 		double a, b;
-		Handle_Geom_Curve crv = BRep_Tool::Curve(TopoDS::Edge(exp.Current()), a, b);
+		Handle(Geom_Curve) crv = BRep_Tool::Curve(TopoDS::Edge(exp.Current()), a, b);
 		if (crv.IsNull()) {
 			continue;
 		}
@@ -428,7 +428,7 @@ int convert_to_ifc(const TopoDS_Wire& wire, IfcSchema::IfcLoop*& loop, bool adva
 
 template <>
 int convert_to_ifc(const TopoDS_Face& f, IfcSchema::IfcFace*& face, bool advanced) {
-	Handle_Geom_Surface surf = BRep_Tool::Surface(f);
+	Handle(Geom_Surface) surf = BRep_Tool::Surface(f);
 	TopExp_Explorer exp(f, TopAbs_WIRE);
 	IfcSchema::IfcFaceBound::list::ptr bounds(new IfcSchema::IfcFaceBound::list);
 	int index = 0;

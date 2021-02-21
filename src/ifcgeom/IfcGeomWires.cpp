@@ -471,7 +471,7 @@ bool IfcGeom::Kernel::convert(const IfcSchema::IfcEdgeCurve* l, TopoDS_Wire& res
 	}
 	
 	BRepBuilderAPI_MakeWire mw;
-	Handle_Geom_Curve crv;
+	Handle(Geom_Curve) crv;
 
 	// The lack of a clear separation between topological and geometrical entities
 	// is starting to get problematic. If the underlying curve is bounded it is

@@ -82,7 +82,7 @@ void SvgSerializer::write(path_object& p, const TopoDS_Wire& wire) {
 		Handle(Geom2d_Curve) curve2d;
 		if (curve.IsNull()) {
 			TopLoc_Location loc;
-			Handle_Geom_Surface surf;
+			Handle(Geom_Surface) surf;
 			
 			BRep_Tool::CurveOnSurface(edge, curve2d, surf, loc, u1, u2);
 			

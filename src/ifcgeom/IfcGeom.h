@@ -179,12 +179,12 @@ public:
 	bool convert_openings(const IfcSchema::IfcProduct* entity, const IfcSchema::IfcRelVoidsElement::list::ptr& openings, const IfcRepresentationShapeItems& entity_shapes, const gp_Trsf& entity_trsf, IfcRepresentationShapeItems& cut_shapes);
 	bool convert_openings_fast(const IfcSchema::IfcProduct* entity, const IfcSchema::IfcRelVoidsElement::list::ptr& openings, const IfcRepresentationShapeItems& entity_shapes, const gp_Trsf& entity_trsf, IfcRepresentationShapeItems& cut_shapes);
 	
-	bool convert_layerset(const IfcSchema::IfcProduct*, std::vector<Handle_Geom_Surface>&, std::vector<const SurfaceStyle*>&, std::vector<double>&);
-	bool apply_layerset(const IfcRepresentationShapeItems&, const std::vector<Handle_Geom_Surface>&, const std::vector<const SurfaceStyle*>&, IfcRepresentationShapeItems&);
-	bool apply_folded_layerset(const IfcRepresentationShapeItems&, const std::vector< std::vector<Handle_Geom_Surface> >&, const std::vector<const SurfaceStyle*>&, IfcRepresentationShapeItems&);
-	bool fold_layers(const IfcSchema::IfcWall*, const IfcRepresentationShapeItems&, const std::vector<Handle_Geom_Surface>&, const std::vector<double>&, std::vector< std::vector<Handle_Geom_Surface> >&);
+	bool convert_layerset(const IfcSchema::IfcProduct*, std::vector<Handle(Geom_Surface)>&, std::vector<const SurfaceStyle*>&, std::vector<double>&);
+	bool apply_layerset(const IfcRepresentationShapeItems&, const std::vector<Handle(Geom_Surface)>&, const std::vector<const SurfaceStyle*>&, IfcRepresentationShapeItems&);
+	bool apply_folded_layerset(const IfcRepresentationShapeItems&, const std::vector< std::vector<Handle(Geom_Surface)> >&, const std::vector<const SurfaceStyle*>&, IfcRepresentationShapeItems&);
+	bool fold_layers(const IfcSchema::IfcWall*, const IfcRepresentationShapeItems&, const std::vector<Handle(Geom_Surface)>&, const std::vector<double>&, std::vector< std::vector<Handle(Geom_Surface)> >&);
 
-	bool split_solid_by_surface(const TopoDS_Shape&, const Handle_Geom_Surface&, TopoDS_Shape&, TopoDS_Shape&);
+	bool split_solid_by_surface(const TopoDS_Shape&, const Handle(Geom_Surface)&, TopoDS_Shape&, TopoDS_Shape&);
 	bool split_solid_by_shell(const TopoDS_Shape&, const TopoDS_Shape& s, TopoDS_Shape&, TopoDS_Shape&);
 
 #if OCC_VERSION_HEX < 0x60900
@@ -195,16 +195,16 @@ public:
 	bool boolean_operation(const TopoDS_Shape&, const TopoDS_Shape&, BOPAlgo_Operation, TopoDS_Shape&, double fuzziness = -1.);
 #endif
 
-	const Handle_Geom_Curve intersect(const Handle_Geom_Surface&, const Handle_Geom_Surface&);
-	const Handle_Geom_Curve intersect(const Handle_Geom_Surface&, const TopoDS_Face&);
-	const Handle_Geom_Curve intersect(const TopoDS_Face&, const Handle_Geom_Surface&);
-	bool intersect(const Handle_Geom_Curve&, const Handle_Geom_Surface&, gp_Pnt&);
-	bool intersect(const Handle_Geom_Curve&, const TopoDS_Face&, gp_Pnt&);
-	bool intersect(const Handle_Geom_Curve&, const TopoDS_Shape&, std::vector<gp_Pnt>&);
-	bool intersect(const Handle_Geom_Surface&, const TopoDS_Shape&, std::vector< std::pair<Handle_Geom_Surface, Handle_Geom_Curve> >&);
+	const Handle(Geom_Curve) intersect(const Handle(Geom_Surface)&, const Handle(Geom_Surface)&);
+	const Handle(Geom_Curve) intersect(const Handle(Geom_Surface)&, const TopoDS_Face&);
+	const Handle(Geom_Curve) intersect(const TopoDS_Face&, const Handle(Geom_Surface)&);
+	bool intersect(const Handle(Geom_Curve)&, const Handle(Geom_Surface)&, gp_Pnt&);
+	bool intersect(const Handle(Geom_Curve)&, const TopoDS_Face&, gp_Pnt&);
+	bool intersect(const Handle(Geom_Curve)&, const TopoDS_Shape&, std::vector<gp_Pnt>&);
+	bool intersect(const Handle(Geom_Surface)&, const TopoDS_Shape&, std::vector< std::pair<Handle(Geom_Surface), Handle(Geom_Curve)> >&);
 	bool closest(const gp_Pnt&, const std::vector<gp_Pnt>&, gp_Pnt&);
-	bool project(const Handle_Geom_Curve&, const gp_Pnt&, gp_Pnt& p, double& u, double& d);
-	bool project(const Handle_Geom_Surface&, const TopoDS_Shape&, double& u1, double& v1, double& u2, double& v2, double widen=0.1);
+	bool project(const Handle(Geom_Curve)&, const gp_Pnt&, gp_Pnt& p, double& u, double& d);
+	bool project(const Handle(Geom_Surface)&, const TopoDS_Shape&, double& u1, double& v1, double& u2, double& v2, double widen=0.1);
 	static int count(const TopoDS_Shape&, TopAbs_ShapeEnum);
 
 	bool find_wall_end_points(const IfcSchema::IfcWall*, gp_Pnt& start, gp_Pnt& end);

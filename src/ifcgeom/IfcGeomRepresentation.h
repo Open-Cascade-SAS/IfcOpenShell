@@ -171,7 +171,7 @@ namespace IfcGeom {
 					for ( exp.Init(s,TopAbs_FACE); exp.More(); exp.Next(), ++num_faces ) {
 						TopoDS_Face face = TopoDS::Face(exp.Current());
 						TopLoc_Location loc;
-						Handle_Poly_Triangulation tri = BRep_Tool::Triangulation(face,loc);
+						Handle(Poly_Triangulation) tri = BRep_Tool::Triangulation(face,loc);
 
 						if ( ! tri.IsNull() ) {
 
@@ -205,7 +205,7 @@ namespace IfcGeom {
 									if (normal_direction.Magnitude() > ALMOST_ZERO) {
 										normal = gp_Dir(normal_direction.XYZ() * rotation_matrix);
 									} else {
-										Handle_Geom_Surface surf = BRep_Tool::Surface(face);
+										Handle(Geom_Surface) surf = BRep_Tool::Surface(face);
 										// Special case the normal at the poles of a spherical surface
 										if (surf->DynamicType() == STANDARD_TYPE(Geom_SphericalSurface)) {
 											if (ALMOST_THE_SAME(fabs(uv.Y()), M_PI / 2.)) {

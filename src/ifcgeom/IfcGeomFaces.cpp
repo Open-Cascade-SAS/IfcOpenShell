@@ -1050,7 +1050,7 @@ bool IfcGeom::Kernel::convert(const IfcSchema::IfcDerivedProfileDef* l, TopoDS_S
 bool IfcGeom::Kernel::convert(const IfcSchema::IfcPlane* l, TopoDS_Shape& face) {
 	gp_Pln pln;
 	convert(l, pln);
-	Handle_Geom_Surface surf = new Geom_Plane(pln);
+	Handle(Geom_Surface) surf = new Geom_Plane(pln);
 #if OCC_VERSION_HEX < 0x60502
 	face = BRepBuilderAPI_MakeFace(surf);
 #else
@@ -1102,7 +1102,7 @@ bool IfcGeom::Kernel::convert(const IfcSchema::IfcBSplineSurfaceWithKnots* l, To
 	for (std::vector<int>::const_iterator it = vmults.begin(); it != vmults.end(); ++it, ++i) {
 		VMults(i) = *it;
 	}
-	Handle_Geom_Surface surf = new Geom_BSplineSurface(Poles, UKnots, VKnots, UMults, VMults, UDegree, VDegree);
+	Handle(Geom_Surface) surf = new Geom_BSplineSurface(Poles, UKnots, VKnots, UMults, VMults, UDegree, VDegree);
 
 #if OCC_VERSION_HEX < 0x60502
 	face = BRepBuilderAPI_MakeFace(surf);
